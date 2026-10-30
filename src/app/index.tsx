@@ -1,98 +1,160 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { GameStage } from '@/components/GameStage';
+import { GameText } from '@/components/GameText';
+import { COLORS } from '@/constants/game';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
+const LOGO_RATIO = 339 / 169; // 学校ロゴの絵の、横 ÷ 縦
+
+/**
+ * タイトル画面（仮）。見た目は Java 版のタイトルと同じ。
+ * ボタンを押したときの動きは、これから作る。
+ */
+export default function TitleScreen() {
+  const [note, setNote] = useState('');
+
+  // 「はじめる」をゆっくり点めつさせる（Java版と同じ 0.6 秒）
+  const blink = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const native = Platform.OS !== 'web';
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(blink, { toValue: 0.2, duration: 600, useNativeDriver: native }),
+        Animated.timing(blink, { toValue: 1, duration: 600, useNativeDriver: native }),
+      ]),
     );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+    loop.start();
+    return () => loop.stop();
+  }, [blink]);
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <GameStage background={COLORS.white}>
+      <View style={styles.container}>
+        {/* 学校のロゴ */}
+        <Image
+          source={require('../../assets/images/nib_logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+        {/* 「RPG」の文字（ロゴと同じ紺色・ななめ・水色の影） */}
+        <Text style={styles.logoText}>RPG</Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        {/* ロゴの3色を使った線（赤・水色・紺） */}
+        <View style={styles.line}>
+          <View style={[styles.lineSmall, { backgroundColor: COLORS.nibRed }]} />
+          <View style={[styles.lineSmall, { backgroundColor: COLORS.nibCyan }]} />
+          <View style={[styles.lineLong, { backgroundColor: COLORS.nibNavy }]} />
+        </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+        <Text style={styles.sub}>― 立ちはだかる先生たちを突破せよ！ ―</Text>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        {/* ボタン */}
+        <View style={styles.buttons}>
+          <Animated.View style={{ opacity: blink }}>
+            <Pressable
+              style={styles.startButton}
+              onPress={() => setNote('ゲームの本編は、これから作ります')}>
+              <Text style={styles.startText}>▶ はじめる</Text>
+            </Pressable>
+          </Animated.View>
+          <Pressable
+            style={styles.charaButton}
+            onPress={() => setNote('キャラクリエイトは、これから作ります')}>
+            <Text style={styles.charaText}>見た目を変える</Text>
+          </Pressable>
+        </View>
+
+        <GameText style={styles.note}>{note}</GameText>
+      </View>
+
+      <GameText style={styles.version}>React Native 版（作成中）</GameText>
+    </GameStage>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.white,
+  },
+  logo: {
+    height: 220,
+    width: 220 * LOGO_RATIO,
+  },
+  logoText: {
+    color: COLORS.nibNavy,
+    fontSize: 120,
+    fontWeight: '900',
+    fontStyle: 'italic',
+    letterSpacing: 18,
+    textShadowColor: COLORS.nibCyan,
+    textShadowOffset: { width: 10, height: 10 },
+    textShadowRadius: 2,
+  },
+  line: {
     flexDirection: 'row',
+    height: 12,
+    marginTop: 4,
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
+  lineSmall: {
+    width: 60,
+  },
+  lineLong: {
+    width: 360,
+  },
+  sub: {
+    marginTop: 20,
+    color: COLORS.nibNavy,
+    fontSize: 32,
+    fontWeight: 'bold',
+  },
+  buttons: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    marginTop: 44,
+    gap: 28,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  startButton: {
+    backgroundColor: COLORS.nibNavy,
+    borderColor: COLORS.nibCyan,
+    borderWidth: 6,
+    borderRadius: 8,
+    paddingHorizontal: 56,
+    paddingVertical: 24,
   },
-  title: {
-    textAlign: 'center',
+  startText: {
+    color: COLORS.white,
+    fontSize: 40,
+    fontWeight: 'bold',
   },
-  code: {
-    textTransform: 'uppercase',
+  charaButton: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.nibNavy,
+    borderWidth: 6,
+    borderRadius: 8,
+    paddingHorizontal: 40,
+    paddingVertical: 24,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  charaText: {
+    color: COLORS.nibNavy,
+    fontSize: 32,
+    fontWeight: 'bold',
+  },
+  note: {
+    marginTop: 20,
+    height: 36,
+    fontSize: 24,
+    color: COLORS.rpgGray,
+  },
+  version: {
+    position: 'absolute',
+    right: 24,
+    bottom: 16,
+    fontSize: 22,
+    color: COLORS.rpgGray,
   },
 });
