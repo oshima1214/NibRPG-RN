@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { GameStage } from '@/components/GameStage';
+import { GameStage, useStage } from '@/components/GameStage';
 import { GameText } from '@/components/GameText';
 import { COLORS } from '@/constants/game';
 
@@ -69,8 +69,18 @@ export default function TitleScreen() {
         <GameText style={styles.note}>{note}</GameText>
       </View>
 
-      <GameText style={styles.version}>React Native 版（作成中）</GameText>
+      <VersionLabel />
     </GameStage>
+  );
+}
+
+/** 右下の「作成中」の文字。切り欠きなどにかからないように、safe のぶん内がわに置く */
+function VersionLabel() {
+  const { safe } = useStage();
+  return (
+    <GameText style={[styles.version, { right: 24 + safe.right, bottom: 16 + safe.bottom }]}>
+      React Native 版（作成中）
+    </GameText>
   );
 }
 
@@ -152,8 +162,6 @@ const styles = StyleSheet.create({
   },
   version: {
     position: 'absolute',
-    right: 24,
-    bottom: 16,
     fontSize: 22,
     color: COLORS.rpgGray,
   },
