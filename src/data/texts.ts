@@ -121,7 +121,7 @@ export const T = {
   end_staff2: "重田",
   end_head_tools: "― 使った道具 ―",
   end_label_dev: "開発",
-  end_tool_dev: "Android Studio",
+  end_tool_dev: "Android Studio・Expo（React Native）",
   end_label_ai: "AI",
   end_tool_ai1: "Claude",
   end_tool_ai1_role: "効果音作成・BGM作成・コーディング支援",

@@ -135,6 +135,12 @@ export const BOSS_MEMORY_CLEAR = 4; // 板書うつしは、素手でもこの�
 export const BOSS_MEMORY_START = 5; // 板書うつしの、はじめに覚える数
 export const BOSS_GAME_OVER = 5; // 攻略失敗画面に渡す番号（理事長）
 
+/** 理事長のHPから、何問目かを決める（HP 200〜151：第1問、150〜101：第2問…） */
+export function bossStageOf(hp: number) {
+  const quarter = BOSS_HP / BOSS_STAGES.length;
+  return Math.min(BOSS_STAGES.length - 1, Math.floor((BOSS_HP - hp) / quarter));
+}
+
 // ---- 第1問：ことば並べ（理事長戦だけの単語。2Fより長く、ハズレの札は見まちがえやすい文字） ----
 export const BOSS_WORDS: readonly Word[] = [
   { answer: 'しゅっせきぼ', hint: '先生が出欠をつける帳面' },

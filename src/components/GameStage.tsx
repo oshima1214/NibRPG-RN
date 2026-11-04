@@ -1,10 +1,12 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import type { ReactNode } from 'react';
+import { StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BASE_HEIGHT, BASE_WIDTH, COLORS } from '@/constants/game';
 
+import { AchievementPopup } from './AchievementPopup';
 import { GameText } from './GameText';
+import { StageContext, useStage, type Stage } from './stageContext';
 
 type Props = {
   children: ReactNode;
@@ -12,25 +14,7 @@ type Props = {
   background?: string;
 };
 
-/** 今の舞台の大きさ（基準の単位）と、よけるべき場所（切り欠きなど） */
-export type Stage = {
-  width: number; // 舞台の横幅（1280 以上）
-  height: number; // 舞台の高さ（720 以上）
-  safe: { top: number; right: number; bottom: number; left: number };
-};
-
-const StageContext = createContext<Stage>({
-  width: BASE_WIDTH,
-  height: BASE_HEIGHT,
-  safe: { top: 0, right: 0, bottom: 0, left: 0 },
-});
-
-/**
- * 舞台の大きさを知りたいときに使う。
- *   const { width, height, safe } = useStage();
- * ボタンなどを画面のはしに置くときは、safe のぶんだけ内がわにずらす
- */
-export const useStage = () => useContext(StageContext);
+export { useStage, type Stage } from './stageContext';
 
 /**
  * ゲームの画面の「舞台」。どの端末でも、画面いっぱいに表示する。
@@ -64,6 +48,7 @@ export function GameStage({ children, background = COLORS.black }: Props) {
       bottom: insets.bottom / scale,
       left: insets.left / scale,
     },
+    scale,
   };
 
   return (
@@ -79,8 +64,24 @@ export function GameStage({ children, background = COLORS.black }: Props) {
           transformOrigin: 'left top',
           transform: [{ scale }],
         }}>
-        <StageContext.Provider value={stage}>{children}</StageContext.Provider>
+        <StageContext.Provider value={stage}>
+          {children}
+          <AchievementPopup />
+        </StageContext.Provider>
       </View>
+    </View>
+  );
+}
+
+/**
+ * 切り欠きなどをよけた内がわ（Java版の「画面のふちに文字がかぶらないようにする」と同じ）。
+ * 背景は GameStage が画面のはしまでぬるので、中身だけを内がわに置ける
+ */
+export function SafeArea({ children, style }: { children?: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const { safe } = useStage();
+  return (
+    <View style={{ flex: 1, paddingTop: safe.top, paddingRight: safe.right, paddingBottom: safe.bottom, paddingLeft: safe.left }}>
+      <View style={[{ flex: 1 }, style]}>{children}</View>
     </View>
   );
 }

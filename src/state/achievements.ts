@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 
 import { LOST_ITEMS } from '@/data/map';
 import { TA } from '@/data/texts';
+import { se } from '@/lib/sound';
 
 import { useGame } from './game';
 import { fit, storage } from './storage';
@@ -11,7 +12,7 @@ import { fit, storage } from './storage';
  * 実績（トロフィー）の係（Java版の Achievements）。
  *   ・解除した実績は保存する（アプリを閉じても残る）
  *   ・タイトルの「はじめる／はじめから」で全部リセット
- *   ・解除したら、画面の右上にポップアップを出す（popups に名前がたまる。出す係はあとで作る）
+ *   ・解除したら、画面の右上にポップアップを出す（popups に名前がたまる。出すのは AchievementPopup）
  * 実績の名前と条件の文は texts.ts の ach_titles / ach_descs（この番号の順）
  */
 
@@ -62,7 +63,7 @@ export const useAchievements = create<AchStore>()(
         const unlocked = [...get().unlocked];
         unlocked[id] = true;
         set({ unlocked, popups: [...get().popups, TA.ach_titles[id]] });
-        // TODO: 音の係を作ったら se_achievement を鳴らす
+        se('se_achievement');
       },
 
       popDone: () => set({ popups: get().popups.slice(1) }),

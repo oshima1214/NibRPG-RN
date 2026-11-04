@@ -22,6 +22,10 @@ import {
  */
 
 const PAUSE_DELAY_MS = 400; // 画面を離れてから、BGMを止めるまでの時間
+// 次の画面が先に曲を流しはじめたときは、前の画面の「止めて」を聞かない（画面の切りかえで音が切れないように）
+const CLAIM_MS = 500;
+let lastClaim = -Infinity;
+const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
 // 何も鳴らない、ごく短い音（タップのときに、BGM・ジングルの再生を許可してもらうために使う）
 const SILENT_WAV =
@@ -151,6 +155,7 @@ function cancelPause() {
 export function bgm(name: BgmName) {
   initSound();
   cancelPause();
+  lastClaim = now();
   stopJingle();
   if (!bgmTrack) return;
   if (bgmNow !== name) {
@@ -164,11 +169,13 @@ export function bgm(name: BgmName) {
 /** 止めていたBGMを、続きから流す（メニューから戻ったときなど） */
 export function resumeBgm() {
   cancelPause();
+  lastClaim = now();
   if (bgmTrack && bgmNow && !isPlaying(bgmTrack) && !jingleOn) play(bgmTrack);
 }
 
 /** 画面を離れるときに呼ぶ。少し待って、次の画面が曲を流さなければ止める */
 export function pauseBgmSoon() {
+  if (now() - lastClaim < CLAIM_MS) return; // 次の画面が、もう曲を流している
   cancelPause();
   pauseTimer = setTimeout(() => bgmTrack?.el.pause(), PAUSE_DELAY_MS);
   jingleTrack?.el.pause();
