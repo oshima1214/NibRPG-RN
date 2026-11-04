@@ -1,98 +1,68 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Redirect, router } from 'expo-router';
+import { useEffect, useRef } from 'react';
+import { Animated, Platform, Pressable, StyleSheet } from 'react-native';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { GameStage } from '@/components/GameStage';
+import { GameText } from '@/components/GameText';
+import { COLORS } from '@/constants/game';
+import { unlockSound } from '@/lib/sound';
+import { enterFullscreen } from '@/lib/web';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
+/**
+ * 「タップしてスタート」の画面（Web だけ）。
+ * ブラウザは、画面を1回タップするまで音を出せず、全画面にもできない。
+ * そのため最初に1回タップしてもらい、そこで音と全画面をオンにしてからタイトルへ進む。
+ * スマホのアプリでは必要ないので、すぐタイトルへ進む
+ */
+export default function StartScreen() {
+  if (Platform.OS !== 'web') return <Redirect href="/title" />;
+  return <TapToStart />;
 }
 
-export default function HomeScreen() {
+function TapToStart() {
+  // 文字をゆっくり点めつさせる
+  const blink = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(blink, { toValue: 0.2, duration: 800, useNativeDriver: false }),
+        Animated.timing(blink, { toValue: 1, duration: 800, useNativeDriver: false }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [blink]);
+
+  const start = () => {
+    unlockSound();
+    enterFullscreen();
+    router.replace('/title');
+  };
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+    <GameStage background={COLORS.black}>
+      <Pressable style={styles.fill} onPress={start}>
+        <Animated.View style={{ opacity: blink }}>
+          <GameText style={styles.text}>画面をタップしてスタート</GameText>
+        </Animated.View>
+        <GameText style={styles.note}>音が出ます</GameText>
+      </Pressable>
+    </GameStage>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  fill: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
   },
-  title: {
-    textAlign: 'center',
+  text: {
+    fontSize: 48,
   },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  note: {
+    marginTop: 24,
+    fontSize: 24,
+    color: COLORS.rpgGray,
   },
 });
