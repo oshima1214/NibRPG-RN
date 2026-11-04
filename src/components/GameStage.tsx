@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BASE_HEIGHT, BASE_WIDTH, COLORS } from '@/constants/game';
 
 import { AchievementPopup } from './AchievementPopup';
+import { FullscreenGuide } from './FullscreenButton';
 import { GameText } from './GameText';
 import { StageContext, useStage, type Stage } from './stageContext';
 
@@ -67,6 +68,7 @@ export function GameStage({ children, background = COLORS.black }: Props) {
         <StageContext.Provider value={stage}>
           {children}
           <AchievementPopup />
+          <FullscreenGuide />
         </StageContext.Provider>
       </View>
     </View>
