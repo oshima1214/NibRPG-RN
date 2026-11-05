@@ -182,8 +182,9 @@ export function drawMap(c: SkCanvas, width: number, height: number, g: MapState,
   const vcols = vx1 - vx0 + 1;
   const vrows = vy1 - vy0 + 1;
 
-  // 1マスの大きさ：縦に VISIBLE_ROWS マス見える大きさ（横が入りきらないときは横に合わせる）
-  const tile = Math.min(width / vcols, height / VISIBLE_ROWS);
+  // 1マスの大きさ：縦に VISIBLE_ROWS マス見える大きさ（どの階でも同じ）
+  //（前は、横が入りきらない階（1F）だけ横に合わせて小さくしていた。今は横にスクロールする）
+  const tile = height / VISIBLE_ROWS;
   // 画面のどこからマップを描くか（大きいマップは主人公を追いかける）
   const r = walkRange(map, vx0, vx1);
   const left = camera(width, tile * vcols, g.px - vx0, r[0] - vx0, r[1] - vx0) - vx0 * tile;
