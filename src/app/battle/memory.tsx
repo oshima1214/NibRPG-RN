@@ -191,11 +191,13 @@ export default function MemoryBattle() {
       <PlayerHp />
       <TimeBar rate={timeRate} />
       {/* 黒板（ここに教科の文字が書かれて、消える） */}
-      <Animated.View style={[styles.board, boardShake.style]}>
+      {/* 理事長戦は黒板が低いので、説明を左に置いて、文字を小さくする（枠からはみ出さないように） */}
+      <Animated.View style={[styles.board, b.boss && styles.bossBoard, boardShake.style]}>
+        {b.boss && <Txt style={styles.bossLabel}>{label}</Txt>}
         <Animated.View style={[styles.boardInner, { opacity: boardAlpha }]}>
-          <GameText style={styles.boardText}>{board}</GameText>
+          <GameText style={[styles.boardText, b.boss && styles.bossText]}>{board}</GameText>
         </Animated.View>
-        <Txt style={styles.boardLabel}>{label}</Txt>
+        {!b.boss && <Txt style={styles.boardLabel}>{label}</Txt>}
       </Animated.View>
       <Txt style={[bs.message, { marginTop: 8 }]}>{b.message}</Txt>
       {/* 教科のボタン（2段） */}
@@ -226,6 +228,20 @@ const styles = StyleSheet.create({
   boardText: {
     fontSize: 68,
     letterSpacing: 14,
+  },
+  bossBoard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  bossText: {
+    fontSize: 44,
+    letterSpacing: 10,
+  },
+  bossLabel: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 24,
+    marginRight: 16,
   },
   boardLabel: {
     position: 'absolute',
