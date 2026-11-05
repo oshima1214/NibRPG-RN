@@ -5,7 +5,7 @@ import { View, type GestureResponderEvent } from 'react-native';
 
 import { BattleFrame, ItemRow, PlayerHp, TimeBar, battleStyles as bs } from '@/components/battle/BattleFrame';
 import { useBattle } from '@/components/battle/useBattle';
-import { useStage } from '@/components/GameStage';
+import { useStageScale } from '@/components/GameStage';
 import { Txt } from '@/components/ui';
 import {
   BOSS_DODGE_SPEED,
@@ -51,7 +51,9 @@ const PRINCIPAL_PHASE1 = [P_STAMP, P_CHIME, P_CLOCK];
 const PRINCIPAL_PHASE2 = [P_CLOCK_STAMP, P_PAPERS, P_CHIME_SPIN];
 
 export default function DodgeBattle() {
-  const { scale } = useStage();
+  // この画面は GameStage の外なので、useStage() ではなく画面の大きさから求める
+  //（useStage() だと、いつも 1 になってしまい、ハートが指より少ししか動かなかった）
+  const scale = useStageScale();
   const isBoss = useLocalSearchParams<{ boss?: string }>().boss === '1';
   const engine = useRef<DodgeEngine | null>(null);
   if (!engine.current) engine.current = new DodgeEngine();
@@ -339,9 +341,12 @@ export default function DodgeBattle() {
       <View style={{ flex: 1, marginTop: 16 }} onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
         {size.w > 0 && pic && (
           <View style={{ width: size.w, height: size.h, overflow: 'hidden' }} pointerEvents="none">
-            <Canvas style={{ width: size.w * k, height: size.h * k, transformOrigin: 'left top', transform: [{ scale: 1 / k }] }}>
-              <Picture picture={pic} />
-            </Canvas>
+            {/* 縮めるのは外がわの View で（Canvas に直接つけると、Web では縮まない） */}
+            <View style={{ width: size.w * k, height: size.h * k, transformOrigin: 'left top', transform: [{ scale: 1 / k }] }}>
+              <Canvas style={{ width: size.w * k, height: size.h * k }}>
+                <Picture picture={pic} />
+              </Canvas>
+            </View>
           </View>
         )}
       </View>
