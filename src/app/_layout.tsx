@@ -7,14 +7,12 @@ import { useEffect, useState } from 'react';
 import { COLORS, FONT } from '@/constants/game';
 import { loadGameAssets } from '@/lib/assets';
 import { initSound } from '@/lib/sound';
-import { setupWebPage } from '@/lib/web';
 import { useStoresReady } from '@/state/ready';
 
 // 文字・画像・セーブデータを読みこみ終わるまで、起動画面（スプラッシュ）を出しておく
 SplashScreen.preventAutoHideAsync();
 
-// Web のページをゲーム向けにする・効果音を読みこみはじめる
-setupWebPage();
+// 効果音を読みこみはじめる
 initSound();
 
 /** すべての画面の土台：文字の読みこみ・上下のバーをかくす・横画面・画面の切りかえ方 */

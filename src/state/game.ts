@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { FLOORS, LOST_ITEMS, BOSS_FLOOR } from '@/data/map';
+import { BOSS_FLOOR, FLOORS, LOST_ITEMS } from '@/data/map';
 import { ITEMS, WEAPONS } from '@/data/shop';
 
 import { clamp, fit, storage } from './storage';
@@ -23,7 +23,7 @@ const BASE_ATTACK = 5; // 武器なし（素手）の攻撃力
 
 // ---- デバッグ ----
 // true の間は、タイトルに「デバッグ：階をえらんで始める」が出る。完成したら false にする
-export const DEBUG = true;
+export const DEBUG = false;
 const DEBUG_MONEY = 9999; // デバッグで始めたときの所持金
 
 // 攻撃のたびに、ダメージを少しばらつかせる（0.2 なら攻撃力の ±20%）

@@ -3,8 +3,10 @@ import { StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle }
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BASE_HEIGHT, BASE_WIDTH, COLORS } from '@/constants/game';
+import { useWebSafeInsets } from '@/lib/webInsets';
 
 import { AchievementPopup } from './AchievementPopup';
+import { FullscreenGuide } from './FullscreenButton';
 import { GameText } from './GameText';
 import { StageContext, useStage, type Stage } from './stageContext';
 
@@ -16,6 +18,18 @@ type Props = {
 
 export { useStage, type Stage } from './stageContext';
 
+/** 基準の1が、実際の画面で何ポイントか（GameStage の外でも使える） */
+export function stageScale(width: number, height: number) {
+  const wide = width / height >= BASE_WIDTH / BASE_HEIGHT; // 16:9 より横長か
+  return wide ? height / BASE_HEIGHT : width / BASE_WIDTH; // 実際の画面 ÷ 基準
+}
+
+/** GameStage の外（GameStage を出している画面そのもの）で、拡大率を知りたいときに使う */
+export function useStageScale() {
+  const { width, height } = useWindowDimensions();
+  return stageScale(width, height);
+}
+
 /**
  * ゲームの画面の「舞台」。どの端末でも、画面いっぱいに表示する。
  *   ・横長の画面（iPhone など）：高さを 720 にして、横幅を画面に合わせて伸ばす（1280〜）
@@ -26,7 +40,14 @@ export { useStage, type Stage } from './stageContext';
  */
 export function GameStage({ children, background = COLORS.black }: Props) {
   const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const appInsets = useSafeAreaInsets();
+  const webInsets = useWebSafeInsets(); // Web のときは、ブラウザから直接も読む（大きいほうを使う）
+  const insets = {
+    top: Math.max(appInsets.top, webInsets.top),
+    right: Math.max(appInsets.right, webInsets.right),
+    bottom: Math.max(appInsets.bottom, webInsets.bottom),
+    left: Math.max(appInsets.left, webInsets.left),
+  };
 
   if (width < height) {
     return (
@@ -37,8 +58,7 @@ export function GameStage({ children, background = COLORS.black }: Props) {
   }
 
   // ここで端末ごとの大きさを計算する
-  const wide = width / height >= BASE_WIDTH / BASE_HEIGHT; // 16:9 より横長か
-  const scale = wide ? height / BASE_HEIGHT : width / BASE_WIDTH; // 実際の画面 ÷ 基準
+  const scale = stageScale(width, height);
   const stage: Stage = {
     width: width / scale,
     height: height / scale,
@@ -67,6 +87,7 @@ export function GameStage({ children, background = COLORS.black }: Props) {
         <StageContext.Provider value={stage}>
           {children}
           <AchievementPopup />
+          <FullscreenGuide />
         </StageContext.Provider>
       </View>
     </View>

@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { FullscreenButton } from '@/components/FullscreenButton';
 import { GameStage, SafeArea } from '@/components/GameStage';
 import { Gradient } from '@/components/Gradient';
 import { HeroView } from '@/components/HeroView';
@@ -66,6 +67,7 @@ function Status() {
           </Pressable>
         ))}
         <View style={{ flex: 1 }} />
+        <FullscreenButton style={{ marginBottom: 12 }} />
         <Pressable
           style={({ pressed }) => [nibButtonStyle, styles.back, pressed && { opacity: 0.7 }]}
           onPress={() => goBack()}>

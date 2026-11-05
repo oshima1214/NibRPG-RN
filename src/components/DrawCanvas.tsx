@@ -36,15 +36,12 @@ export function DrawCanvas({ width, height, draw, style, deps }: Props) {
   );
   return (
     <View style={[{ width, height, overflow: 'hidden' }, style]} pointerEvents="none">
-      <Canvas
-        style={{
-          width: w,
-          height: h,
-          transformOrigin: 'left top',
-          transform: [{ scale: 1 / k }],
-        }}>
-        <Picture picture={picture} />
-      </Canvas>
+      {/* 縮めるのは外がわの View で（Canvas に直接つけると、Web では縮まない） */}
+      <View style={{ width: w, height: h, transformOrigin: 'left top', transform: [{ scale: 1 / k }] }}>
+        <Canvas style={{ width: w, height: h }}>
+          <Picture picture={picture} />
+        </Canvas>
+      </View>
     </View>
   );
 }

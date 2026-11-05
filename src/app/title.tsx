@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { FullscreenButton } from '@/components/FullscreenButton';
 import { GameDialog } from '@/components/GameDialog';
 import { GameStage, SafeArea } from '@/components/GameStage';
 import { GameText } from '@/components/GameText';
@@ -125,6 +126,9 @@ function Title() {
           </Pressable>
         )}
       </View>
+
+      {/* Web のときだけ：全画面ボタン（右上） */}
+      <FullscreenButton style={styles.fullscreen} />
 
       {/* はじめから：確認 */}
       <GameDialog
@@ -311,6 +315,11 @@ const styles = StyleSheet.create({
   debugText: {
     color: COLORS.rpgGray,
     fontSize: 24,
+  },
+  fullscreen: {
+    position: 'absolute',
+    top: 24,
+    right: 24,
   },
   overlay: {
     position: 'absolute',
